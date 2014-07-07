@@ -195,7 +195,7 @@
 	"bootdelay=1\0" \
 	"bootcmd=run setargs_nand boot_normal\0" \
 	"console=ttyS0,115200\0" \
-	"nand_root=/dev/nand3\0" \
+	"nand_root=/dev/nandb\0" \
 	"loglevel=8\0" \
 	"bootenv=/uEnv.txt\0" \
 	"kernel=/uImage\0" \
@@ -204,13 +204,16 @@
 	"scriptbinaddr=0x43000000\0" \
 	"kerneladdr=0x48000000\0" \
 	"loadbootenv=mw 41000000 0 10000;" \
-	 "ext4load nand 2:0 $scriptaddr /boot${bootenv} || fatload nand 0:0 $scriptaddr ${bootenv};" \
+         "ext4load nand 1:0 $scriptaddr /boot${bootenv} || fatload nand 0:0 $scriptaddr ${bootenv};" \
 	 "env import 41000000 10000;" \
+	 "if test -n \"${root}\"; then setenv nand_root ${root}; fi;" \
+	 "if test -n \"${kernel}\"; then setenv kernel ${kernel}; fi;" \
+         "setenv uenvcmd ${uenvcmd};" \
 	 "setenv bootargs console=${console} root=${nand_root} loglevel=${loglevel} ${extraargs}\0" \
-	"loadscriptbin=ext4load nand 2:0 $scriptbinaddr /boot${scriptbin} || fatload nand 0:0 $scriptbinaddr ${scriptbin}\0" \
-	"loadkernel=ext4load nand 2:0 $kerneladdr /boot${kernel} || fatload nand 0:0 $kerneladdr ${kernel}\0" \
+        "loadscriptbin=ext4load nand 1:0 $scriptbinaddr /boot${scriptbin} || fatload nand 0:0 $scriptbinaddr ${scriptbin}\0" \
+        "loadkernel=ext4load nand 1:0 $kerneladdr /boot${kernel} || fatload nand 0:0 $kerneladdr ${kernel}\0" \
 	"setargs_nand=run loadbootenv loadscriptbin loadkernel\0" \
-    	"boot_normal=bootm 48000000\0" \
+        "boot_normal=if test -n \"${uenvcmd}\"; then run uenvcmd; else bootm 48000000; fi\0" \
 	"boot_recovery=sunxi_flash read 40007800 recovery;boota 40007800\0" \
 	"boot_fastboot=fastboot\0"
 
